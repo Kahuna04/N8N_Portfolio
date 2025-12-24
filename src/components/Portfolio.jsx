@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowRight, X } from 'lucide-react';
 import { portfolioItems } from '../data/portfolio';
 
 const Portfolio = () => {
     const [activeCategory, setActiveCategory] = useState('All');
+    const [selectedImage, setSelectedImage] = useState(null);
 
     const categories = ['All', ...new Set(portfolioItems.map(item => item.category))];
 
@@ -45,6 +46,23 @@ const Portfolio = () => {
                             <div className="card-glow" />
 
                             <div className="card-content">
+                                {item.image && (
+                                    <div
+                                        className="item-image-container clickable"
+                                        onClick={() => setSelectedImage(item)}
+                                    >
+                                        <img
+                                            src={item.image}
+                                            alt={item.title}
+                                            className="item-image"
+                                            loading="lazy"
+                                        />
+                                        <div className="image-overlay">
+                                            <span>View Workflow</span>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="item-header">
                                     <div className="item-icon">
                                         <item.icon size={24} />
@@ -74,6 +92,42 @@ const Portfolio = () => {
                     ))}
                 </div>
             </div>
+
+            {/* Lightbox Modal */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div
+                        className="lightbox-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <motion.div
+                            className="lightbox-content"
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                className="lightbox-close"
+                                onClick={() => setSelectedImage(null)}
+                            >
+                                <X size={24} />
+                            </button>
+                            <img
+                                src={selectedImage.image}
+                                alt={selectedImage.title}
+                                className="lightbox-image"
+                            />
+                            <div className="lightbox-caption">
+                                <h3>{selectedImage.title}</h3>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </section>
     );
 };

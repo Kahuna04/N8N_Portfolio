@@ -8,7 +8,8 @@ export const portfolioItems = [
         tags: ["Google Drive", "Notion", "Gmail", "Slack", "Airtable"],
         category: "Operations",
         icon: Users,
-        workflowFile: "Automated Client Onboarding Workflow.json"
+        workflowFile: "Automated Client Onboarding Workflow.json",
+        image: "/User Registration with Notification.jpg"
     },
     {
         id: 2,
@@ -17,7 +18,8 @@ export const portfolioItems = [
         tags: ["Social Media", "Content", "Automation"],
         category: "Marketing",
         icon: Share2,
-        workflowFile: "Automated Content Distribution Pipeline.json"
+        workflowFile: "Automated Content Distribution Pipeline.json",
+        image: "/Social mention tracker.jpg" // Fitting placeholder as content distribution often relates to tracking
     },
     {
         id: 3,
@@ -26,7 +28,8 @@ export const portfolioItems = [
         tags: ["Calendar", "Scheduling", "Email"],
         category: "Productivity",
         icon: Calendar,
-        workflowFile: "Call Scheduler — Merged.json"
+        workflowFile: "Call Scheduler — Merged.json",
+        image: "/Call Scheduler.jpg"
     },
     {
         id: 4,
@@ -35,7 +38,8 @@ export const portfolioItems = [
         tags: ["Finance", "Invoicing", "Payments"],
         category: "Finance",
         icon: CreditCard,
-        workflowFile: "Invoice & Payment Tracker.json"
+        workflowFile: "Invoice & Payment Tracker.json",
+        image: "/Invoice and Payment Tracker.jpg"
     },
     {
         id: 5,
@@ -44,7 +48,8 @@ export const portfolioItems = [
         tags: ["CRM", "Lead Gen", "Sales"],
         category: "Sales",
         icon: Database,
-        workflowFile: "Lead Capture & CRM Sync.json"
+        workflowFile: "Lead Capture & CRM Sync.json",
+        image: "/Lead Capture and CRM sync.jpg"
     },
     {
         id: 6,
@@ -53,7 +58,8 @@ export const portfolioItems = [
         tags: ["Leads", "Management", "Custom"],
         category: "Sales",
         icon: Users,
-        workflowFile: "OpenProdkt Leads.json"
+        workflowFile: "OpenProdkt Leads.json",
+        image: "/OpenProdkt Leads.jpg"
     },
     {
         id: 7,
@@ -62,7 +68,8 @@ export const portfolioItems = [
         tags: ["Scheduling", "CRM", "Automation"],
         category: "Sales",
         icon: Calendar,
-        workflowFile: "Smart Scheduling with Automated Confirmations and Lead Management.json"
+        workflowFile: "Smart Scheduling with Automated Confirmations and Lead Management.json",
+        image: "/Smart Scheduling with automated confirmation.jpg"
     },
     {
         id: 8,
@@ -71,7 +78,8 @@ export const portfolioItems = [
         tags: ["Social Listening", "Monitoring", "Alerts"],
         category: "Marketing",
         icon: Bell,
-        workflowFile: "Social mention tracker.json"
+        workflowFile: "Social mention tracker.json",
+        image: "/Social mention tracker.jpg"
     }
 ];
 
