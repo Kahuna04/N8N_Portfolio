@@ -1,6 +1,8 @@
 import React from 'react';
+// Force refresh 3
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
+import About from './components/About';
 import Skills from './components/Skills';
 import TechStack from './components/TechStack';
 import Portfolio from './components/Portfolio';
@@ -13,9 +15,10 @@ function App() {
       <Navbar />
       <main>
         <Hero />
+        <About />
         <Skills />
-        <TechStack />
         <Portfolio />
+        <TechStack />
         <Contact />
       </main>
       <Footer />
