@@ -10,20 +10,20 @@ const About = () => {
                 </div>
 
                 <motion.div
-                    className="about-content"
+                    className="about-content centered-content"
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
                 >
                     <p className="about-text">
-                        Hi, I am Damilare, a passionate automation expert and developer dedicated to building efficient, scalable, and intelligent systems. With a deep understanding of workflow automation and full-stack development, I bridge the gap between complex technical requirements and seamless user experiences.
+                        Hi, I am Damilare. I’m a <strong>AI Agent and automation specialist</strong> who builds workflow-driven operations layers for growing service brands.
                     </p>
                     <p className="about-text">
-                        My journey involves mastering tools like N8N, Make.com, and integrating advanced AI solutions to solve real-world problems. I thrive on optimizing processes and creating robust architectures that empower businesses to achieve more with less effort.
+                        I specialize in <strong>N8N and Make.com</strong> to design systems that reduce repetitive admin work, create consistent workflows, and improve leadership visibility—all with reliability and clean handoff to human teams.
                     </p>
                     <p className="about-text">
-                        When I'm not coding or designing workflows, I'm constantly exploring new technologies to stay ahead of the curve and deliver cutting-edge solutions.
+                        I design reliable, documented, and fully custom automations that handle lead capture, CRM syncing, customer communication, scheduling, and more — all built to fit your real workflow, not a template.
                     </p>
                 </motion.div>
             </div>
