@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ExternalLink, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { portfolioItems } from '../data/portfolio';
-import WorkflowVisualization from './WorkflowVisualization';
 
 const Portfolio = () => {
     const [activeCategory, setActiveCategory] = useState('All');
-    const [selectedWorkflow, setSelectedWorkflow] = useState(null);
 
     const categories = ['All', ...new Set(portfolioItems.map(item => item.category))];
 
@@ -43,8 +41,6 @@ const Portfolio = () => {
                             exit={{ opacity: 0, scale: 0.9 }}
                             key={item.id}
                             className="card portfolio-item group"
-                            onClick={() => setSelectedWorkflow(item.workflowFile)}
-                            style={{ cursor: 'pointer' }}
                         >
                             <div className="card-glow" />
 
@@ -73,24 +69,11 @@ const Portfolio = () => {
                                         </span>
                                     ))}
                                 </div>
-
-                                <div className="view-details">
-                                    View Workflow
-                                    <ArrowRight size={16} className="arrow-icon" />
-                                </div>
                             </div>
                         </motion.div>
                     ))}
                 </div>
             </div>
-
-            {/* Workflow Visualization Modal */}
-            {selectedWorkflow && (
-                <WorkflowVisualization
-                    workflowFile={selectedWorkflow}
-                    onClose={() => setSelectedWorkflow(null)}
-                />
-            )}
         </section>
     );
 };
