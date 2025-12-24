@@ -46,11 +46,8 @@ const TechStack = () => {
     ];
 
     return (
-        <section id="techstack" className="section tech-stack-section">
+        <section id="techstack" className="section section-sm tech-stack-section">
             <div className="container-fluid"> {/* Changed to fluid for full width marquee */}
-                <div className="section-header center">
-                    <h2 className="section-title">Tech Stack</h2>
-                </div>
 
                 <div className="marquee-container">
                     <div className="marquee-content">

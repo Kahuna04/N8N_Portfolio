@@ -6,6 +6,7 @@ import About from './components/About';
 import Skills from './components/Skills';
 import TechStack from './components/TechStack';
 import Portfolio from './components/Portfolio';
+import FAQ from './components/FAQ';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 
@@ -15,10 +16,11 @@ function App() {
       <Navbar />
       <main>
         <Hero />
+        <TechStack />
         <About />
         <Skills />
         <Portfolio />
-        <TechStack />
+        <FAQ />
         <Contact />
       </main>
       <Footer />
