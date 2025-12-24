@@ -1,0 +1,1567 @@
+{
+  "name": "Call Scheduler — Merged",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zoho-call-interest",
+        "options": {}
+      },
+      "id": "0fcb2e76-7d76-4221-9881-1076d54d5d11",
+      "name": "Zoho Initial Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1648,
+        608
+      ],
+      "webhookId": "b49498dc-0938-4c10-98ea-30152cdd2e2d"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "zoho-reschedule",
+        "options": {}
+      },
+      "id": "56331551-a255-4a48-a57b-e3d6d10b5dc8",
+      "name": "Zoho Reschedule Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        1280
+      ],
+      "webhookId": "99952e60-4f98-4a5e-bc0c-b4dc491bf513"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-reply",
+        "options": {}
+      },
+      "id": "94fc74a2-dab9-4b08-b02e-9c06d1ad32ef",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1424,
+        1856
+      ],
+      "webhookId": "5dd1f102-b07b-4637-ab84-cfefcf427646"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "e5a19f3a-b911-4147-a227-4d3abd43f91e",
+      "name": "Daily Cron Followup",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        2704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const node = $node['$start'].name;\n// We can't access $start directly here, so we'll infer by incoming fields\n// Instead we rely on manual connections: each trigger connects to this node with a different 'source_type'.\n// We'll merge the different shapes into one standard JSON.\n\n// Trigger-specific metadata will be passed via 'source_type' on connections.\nreturn items;"
+      },
+      "id": "5e02af86-0744-41e4-853f-09f7a3e9ccdf",
+      "name": "Normalize Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "57f6b959-4933-41dc-b360-7da12c234c63",
+      "name": "Source Router",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -976,
+        992
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items[0].json;\n// TODO: map Zoho payload → { client_name, client_email, client_phone, timezone, interested_in_call }\n// Only continue if interested_in_call == 'Yes'\nif (data.interested_in_call !== 'Yes') {\n  return [];\n}\n// Normalize phone, infer timezone if needed\n// Set initial status\nreturn [{ json: { ...data, status: 'WAITING_FOR_CLIENT_AVAILABILITY' } }];"
+      },
+      "id": "902fe085-3261-40f3-8d0d-3434d3615f0b",
+      "name": "Handle Zoho Initial",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Workflow Configuration').first().json.dbApiUrl }}/clients",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "client_email",
+              "value": "={{ $json.client_email }}"
+            },
+            {
+              "name": "client_name",
+              "value": "={{ $json.client_name }}"
+            },
+            {
+              "name": "client_phone",
+              "value": "={{ $json.client_phone }}"
+            },
+            {
+              "name": "company",
+              "value": "={{ $json.company }}"
+            },
+            {
+              "name": "country",
+              "value": "={{ $json.country }}"
+            },
+            {
+              "name": "client_timezone",
+              "value": "={{ $json.client_timezone }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $json.status }}"
+            },
+            {
+              "name": "followup_count",
+              "value": "={{ $json.followup_count }}"
+            },
+            {
+              "name": "last_contact",
+              "value": "={{ $json.last_contact }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "644427c6-f627-439e-80c3-014640e12842",
+      "name": "DB Upsert Client",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const client = items[0].json;\n// Very simple placeholder: generate next 3 days at 10:00, 13:00, 15:00 client time\n// You'll replace with proper timezone-aware logic\nconst slots = [\n  'Tomorrow 10:00',\n  'Tomorrow 13:00',\n  'Tomorrow 15:00'\n];\nclient.proposed_slots = slots;\nreturn [{ json: client }];"
+      },
+      "id": "8ee18e37-91ec-443b-b893-4023a8131855",
+      "name": "Generate Slots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/+2348070859502/messages",
+        "options": {}
+      },
+      "id": "33e04b91-e2eb-4dec-abad-3ce0922af7be",
+      "name": "WhatsApp Initial",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        448
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Workflow Configuration').first().json.hostEmail }}",
+        "toEmail": "={{ $json.client_email }}",
+        "subject": "Let's schedule your call",
+        "html": "=<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n    .container { max-width: 600px; margin: 0 auto; padding: 20px; }\n    .header { background-color: #4CAF50; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }\n    .content { background-color: #f9f9f9; padding: 30px; border: 1px solid #ddd; }\n    .time-slots { background-color: white; padding: 15px; margin: 20px 0; border-left: 4px solid #4CAF50; }\n    .time-slot { padding: 8px 0; font-weight: bold; color: #4CAF50; }\n    .cta { background-color: #4CAF50; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 20px 0; }\n    .footer { text-align: center; padding: 20px; color: #777; font-size: 12px; }\n  </style>\n</head>\n<body>\n  <div class=\"container\">\n    <div class=\"header\">\n      <h1>Let's Schedule Your Call</h1>\n    </div>\n    <div class=\"content\">\n      <p>Hi {{ $json.client_name }},</p>\n      <p>Thank you for your interest! We're excited to connect with you.</p>\n      <p>Here are some available time slots that could work for our call:</p>\n      <div class=\"time-slots\">\n        {{ $json.proposed_slots.map(slot => '<div class=\"time-slot\">• ' + slot + '</div>').join('') }}\n      </div>\n      <p>Please reply with your preferred time, or feel free to suggest another time between 10:00 AM – 4:00 PM in your timezone.</p>\n      <p>We look forward to speaking with you!</p>\n      <p>Best regards,<br>Your Team</p>\n    </div>\n    <div class=\"footer\">\n      <p>This email was sent automatically. Please reply to confirm your preferred time.</p>\n    </div>\n  </div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "ca67e43d-a441-4b99-b0c9-b673a5c40320",
+      "name": "Email Initial",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        640
+      ],
+      "webhookId": "42328a41-e224-4a5c-863b-e5a0c8d67224",
+      "credentials": {
+        "smtp": {
+          "id": "vlxDARAbCPkaOPc6",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://YOUR_DB_API/scheduling_state",
+        "options": {}
+      },
+      "id": "835dae3a-19e9-4883-a9cd-ed3d756907dd",
+      "name": "DB Update Initial Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        640,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = items[0].json;\n// data: { client_email, meeting_issue_type, notes }\nreturn items;"
+      },
+      "id": "925ca985-1469-48aa-a36a-d3fe6f37ea43",
+      "name": "Handle Zoho Reschedule",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Workflow Configuration').first().json.dbApiUrl }}/clients/{{ $json.client_email }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"status\": \"NEEDS_RESCHEDULE\"\n}",
+        "options": {}
+      },
+      "id": "005a334c-d507-429c-83e2-02d1b1c420cd",
+      "name": "DB Mark Needs Reschedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -256,
+        832
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/YOUR_WHATSAPP_PHONE_ID/messages",
+        "options": {}
+      },
+      "id": "5514a94a-a595-4d19-8ff2-dc4910c26147",
+      "name": "WhatsApp Reschedule Prompt",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        768
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse incoming WhatsApp text and extract time\nconst body = items[0].json;\nconst text = (body.text || '').toLowerCase();\n// VERY naive parsing – replace with better or GPT proxy\nconst hasTomorrow = text.includes('tomorrow');\n// Mark as vague / to be clarified\nreturn [{ json: { raw_text: text, is_vague: hasTomorrow, client_phone: body.from } }];"
+      },
+      "id": "715bce5f-767a-4abf-af9b-e4c68cfeb7c1",
+      "name": "Handle WhatsApp Reply",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.dbApiUrl }}/clients?phone={{ $json.client_phone }}",
+        "options": {}
+      },
+      "id": "98482642-dbdb-40c9-bb77-ac67d1b120e8",
+      "name": "DB Lookup By Phone",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -256,
+        1168
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Vague Response"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Clear Response"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "6a89a8ad-18db-49c1-a169-2574fb977c0a",
+      "name": "Decide Vague or Clear",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        1072
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/YOUR_WHATSAPP_PHONE_ID/messages",
+        "options": {}
+      },
+      "id": "b1f12baf-5587-42ac-9e72-f5be8fdd4a36",
+      "name": "Send Clarification Slots",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        192,
+        1184
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ $('Workflow Configuration').first().json.dbApiUrl }}/clients/stalled?hours={{ $('Workflow Configuration').first().json.followupDelayHours }}",
+        "options": {}
+      },
+      "id": "2dc3b721-a334-4b88-9453-4e2429785296",
+      "name": "DB Get Stalled",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -32,
+        1616
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://graph.facebook.com/v19.0/YOUR_WHATSAPP_PHONE_ID/messages",
+        "options": {}
+      },
+      "id": "b9694546-8d2c-4173-b5aa-55a8adab7405",
+      "name": "Send Followup WA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "={{ $('Workflow Configuration').first().json.hostEmail }}",
+        "toEmail": "={{ $json.client_email }}",
+        "subject": "Quick follow-up on scheduling your call",
+        "emailFormat": "text",
+        "text": "=Hi {{ $json.client_name }},\n\nI wanted to follow up to see if you're still interested in scheduling a quick call with us.\n\nIf you'd like to proceed, simply reply with a day and time that works best for you (between 10:00–16:00 your time), and we'll get it on the calendar.\n\nLooking forward to connecting!\n\nBest regards",
+        "options": {}
+      },
+      "id": "888eace6-d982-42e5-96b0-f3bf626a7a38",
+      "name": "Send Followup Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        1712
+      ],
+      "webhookId": "15cc93cb-aa6a-4453-8748-33d01ac6a8cf",
+      "credentials": {
+        "smtp": {
+          "id": "vlxDARAbCPkaOPc6",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $('Workflow Configuration').first().json.dbApiUrl }}/clients/{{ $json.client_email }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"followup_count\": {{ $json.followup_count + 1 }},\n  \"last_contact\": \"{{ $now.toISO() }}\"\n}",
+        "options": {}
+      },
+      "id": "2a980e38-2165-416e-813f-5c3794d1f913",
+      "name": "DB Increment Followup",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        640,
+        1648
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "dbApiUrl",
+              "value": "<__PLACEHOLDER_VALUE__Your database API base URL__>",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "hostEmail",
+              "value": "<__PLACEHOLDER_VALUE__Host email address for calendar invites__>",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "hostTimezone",
+              "value": "UTC",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "workingHoursStart",
+              "value": "10",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "workingHoursEnd",
+              "value": "16",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "maxFollowupAttempts",
+              "value": "3",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "followupDelayHours",
+              "value": "48",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "ab5e84ab-e6e7-4989-a070-dfef62ebc0f2",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1424,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "messages"
+        ],
+        "options": {}
+      },
+      "id": "1067120e-8175-4fe8-95df-6f05b650d9ff",
+      "name": "WhatsApp Trigger",
+      "type": "n8n-nodes-base.whatsAppTrigger",
+      "typeVersion": 1,
+      "position": [
+        -976,
+        2112
+      ],
+      "webhookId": "c7114052-869f-4dc5-b902-090ad11b23e9"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 860121743,
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit#gid=860121743"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ec18ab1a-d2e4-47be-a078-249720314580",
+      "name": "Store Form Responses",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -976,
+        544
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "jCEDUnBkuMCMCfXG",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ \"Client message: \" + $json.text + \"\\n\\nClient phone: \" + $json.from }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are a scheduling assistant that extracts date/time information from client messages.\n\nYour task:\n1. Parse the client's message to extract their preferred meeting time\n2. Determine if the time is SPECIFIC (exact date and time) or VAGUE (like \"tomorrow afternoon\")\n3. Extract the date and time if specific\n4. Return structured data\n\nBe intelligent about parsing natural language like \"tomorrow at 2pm\", \"next Tuesday 14:00\", \"Friday afternoon\", etc."
+        }
+      },
+      "id": "bb553d4d-dcf7-4676-9f3e-1f2951aac92c",
+      "name": "Parse Client Response",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -720,
+        1904
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "1d02c416-f7d2-448d-b477-cbb8ff989f13",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -752,
+        2128
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "CaWfXpqifeKiRlYx",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"response_type\": \"specific\",\n\t\"proposed_date\": \"2024-01-15\",\n\t\"proposed_time\": \"14:00\",\n\t\"client_phone\": \"+1234567890\",\n\t\"is_vague\": false,\n\t\"original_message\": \"Tomorrow at 2pm works for me\"\n}",
+        "autoFix": true
+      },
+      "id": "1d665329-1046-4a75-99f8-b26f15e570c5",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -624,
+        2128
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "phoneNumberId": "<__PLACEHOLDER_VALUE__Your WhatsApp Business Phone Number ID__>",
+        "recipientPhoneNumber": "={{ $json.client_phone }}",
+        "textBody": "={{ \"Hi \" + $json.client_name + \", thanks for your interest! When would suit you for a quick call? Here are some times (your local time):\\n\\n\" + $json.proposed_slots.join(\"\\n\") + \"\\n\\nReply with your preferred time or suggest another between 10:00-16:00 your time.\" }}",
+        "additionalFields": {}
+      },
+      "id": "35e3c7bc-52d5-4233-89c0-c8273e5f9ccc",
+      "name": "Send WhatsApp Message",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        416,
+        1520
+      ],
+      "webhookId": "794eeb04-74f9-4b3c-ba11-468ac51142a3",
+      "credentials": {
+        "whatsAppApi": {
+          "id": "LM2S7goTgKDWoSCg",
+          "name": "WhatsApp account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "create",
+        "calendarId": {
+          "__rl": true,
+          "value": "AQMkADAwATNiZmYAZC03MmI2LTZhZDMtMDACLTAwCgBGAAADyeF4tJkvYk_YDIlg1i8mrAcAy4oVskjfLE_mo_kyo9D4pwAAAgEGAAAAy4oVskjfLE_mo_kyo9D4pwAAAi5hAAAA",
+          "mode": "list",
+          "cachedResultName": "Calendar"
+        },
+        "subject": "={{ \"Call with \" + $json.client_name }}",
+        "startDateTime": "={{ $json.confirmed_datetime_utc }}",
+        "endDateTime": "={{ new Date(new Date($json.confirmed_datetime_utc).getTime() + 30 * 60000).toISOString() }}",
+        "additionalFields": {
+          "body": "={{ \"Meeting with \" + $json.client_name + \"\\n\\nClient Email: \" + $json.client_email + \"\\n\\nClient Phone: \" + ($json.client_phone || 'N/A') }}",
+          "isOnlineMeeting": true
+        }
+      },
+      "id": "84bd13d7-1060-44e7-8bab-28a9a13ee947",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        2512
+      ],
+      "webhookId": "4912b684-d2f2-4d86-bf70-e605b32f6e00",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "4er5AN1BAXpLhRKt",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "event",
+        "operation": "get",
+        "calendarId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.calendar_id }}"
+        },
+        "eventId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.event_id }}"
+        }
+      },
+      "id": "6937add0-5f29-4857-9f92-65c400989a7f",
+      "name": "Check Event Status",
+      "type": "n8n-nodes-base.microsoftOutlook",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        2512
+      ],
+      "webhookId": "0783ae9c-d0b5-4005-b9ea-b3e4c86b47bc",
+      "credentials": {
+        "microsoftOutlookOAuth2Api": {
+          "id": "4er5AN1BAXpLhRKt",
+          "name": "Microsoft Outlook account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate 3-5 available time slots within client's 10:00-16:00 window\n// over next 3-5 business days, respecting host availability and timezone conversion\n\nconst client = items[0].json;\nconst clientTimezone = client.timezone || 'UTC';\nconst hostTimezone = 'America/New_York'; // Configure your host timezone\n\n// Helper function to check if a date is a business day (Mon-Fri)\nfunction isBusinessDay(date) {\n  const day = date.getDay();\n  return day >= 1 && day <= 5; // Monday = 1, Friday = 5\n}\n\n// Helper function to format date/time for client\nfunction formatSlot(date, clientTz) {\n  return date.toLocaleString('en-US', {\n    timeZone: clientTz,\n    weekday: 'long',\n    month: 'short',\n    day: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n    hour12: true\n  });\n}\n\n// Generate slots\nconst slots = [];\nconst now = new Date();\nlet daysChecked = 0;\nlet businessDaysFound = 0;\n\n// Available hours in client's timezone (10:00-16:00)\nconst availableHours = [10, 13, 15]; // 10 AM, 1 PM, 3 PM\n\nwhile (businessDaysFound < 5 && daysChecked < 10) {\n  daysChecked++;\n  const checkDate = new Date(now);\n  checkDate.setDate(now.getDate() + daysChecked);\n  \n  if (isBusinessDay(checkDate)) {\n    businessDaysFound++;\n    \n    // Generate 1 slot per business day at different times\n    const hourIndex = businessDaysFound % availableHours.length;\n    const slotDate = new Date(checkDate);\n    slotDate.setHours(availableHours[hourIndex], 0, 0, 0);\n    \n    // Format the slot for the client\n    const formattedSlot = formatSlot(slotDate, clientTimezone);\n    \n    slots.push({\n      datetime: slotDate.toISOString(),\n      formatted: formattedSlot,\n      clientTimezone: clientTimezone\n    });\n  }\n}\n\n// Return client data with proposed slots\nreturn [{\n  json: {\n    ...client,\n    proposed_slots: slots,\n    slots_generated_at: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "e13ceef0-1ba7-42dd-bfb0-95e6a482eea0",
+      "name": "Generate Time Slots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        976
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Detect timezone from country, phone code, or timezone field\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const data = item.json;\n  let detectedTimezone = null;\n\n  // Priority 1: Use timezone field if provided\n  if (data.timezone) {\n    detectedTimezone = data.timezone;\n  }\n  // Priority 2: Detect from country\n  else if (data.country) {\n    const countryToTimezone = {\n      'USA': 'America/New_York',\n      'United States': 'America/New_York',\n      'US': 'America/New_York',\n      'UK': 'Europe/London',\n      'United Kingdom': 'Europe/London',\n      'Canada': 'America/Toronto',\n      'Australia': 'Australia/Sydney',\n      'India': 'Asia/Kolkata',\n      'Germany': 'Europe/Berlin',\n      'France': 'Europe/Paris',\n      'Spain': 'Europe/Madrid',\n      'Italy': 'Europe/Rome',\n      'Brazil': 'America/Sao_Paulo',\n      'Mexico': 'America/Mexico_City',\n      'Japan': 'Asia/Tokyo',\n      'China': 'Asia/Shanghai',\n      'Singapore': 'Asia/Singapore',\n      'UAE': 'Asia/Dubai',\n      'South Africa': 'Africa/Johannesburg',\n      'Nigeria': 'Africa/Lagos'\n    };\n    detectedTimezone = countryToTimezone[data.country] || 'UTC';\n  }\n  // Priority 3: Detect from phone code\n  else if (data.client_phone) {\n    const phone = data.client_phone.toString();\n    const phoneToTimezone = {\n      '+1': 'America/New_York',\n      '+44': 'Europe/London',\n      '+91': 'Asia/Kolkata',\n      '+61': 'Australia/Sydney',\n      '+49': 'Europe/Berlin',\n      '+33': 'Europe/Paris',\n      '+34': 'Europe/Madrid',\n      '+39': 'Europe/Rome',\n      '+55': 'America/Sao_Paulo',\n      '+52': 'America/Mexico_City',\n      '+81': 'Asia/Tokyo',\n      '+86': 'Asia/Shanghai',\n      '+65': 'Asia/Singapore',\n      '+971': 'Asia/Dubai',\n      '+27': 'Africa/Johannesburg',\n      '+234': 'Africa/Lagos'\n    };\n    \n    // Find matching phone code\n    for (const [code, tz] of Object.entries(phoneToTimezone)) {\n      if (phone.startsWith(code)) {\n        detectedTimezone = tz;\n        break;\n      }\n    }\n  }\n\n  // Default to UTC if no timezone detected\n  if (!detectedTimezone) {\n    detectedTimezone = 'UTC';\n  }\n\n  results.push({\n    json: {\n      ...data,\n      timezone: detectedTimezone,\n      timezone_detected: true\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "93667b4a-1f6d-4e8b-8948-4888e4c438d8",
+      "name": "Detect Timezone",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.interested_in_call }}",
+              "rightValue": "Yes",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "7f94af7e-fb4f-492d-afa1-1a195459ba54",
+      "name": "Check Interest",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1200,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.is_vague }}",
+                    "rightValue": "true",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Vague - Need Clarification"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.response_type }}",
+                    "rightValue": "specific",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Specific - Create Event"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5b3fb7e6-c83e-44fd-939e-29af28b8979d",
+      "name": "Route By Response Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -32,
+        1264
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.responseStatus }}",
+              "rightValue": "declined",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "20561937-3957-4fad-8609-34668cfde80e",
+      "name": "Check Event Declined",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        2512
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.followup_count }}",
+              "rightValue": "={{ $('Workflow Configuration').first().json.maxFollowupAttempts }}",
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "210d59f1-2f6c-417c-b24e-1bf2edc118f2",
+      "name": "Check Followup Limit",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        192,
+        1616
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "WAITING_FOR_CLIENT_AVAILABILITY",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "followup_count",
+              "value": 0,
+              "type": "number"
+            },
+            {
+              "id": "id-3",
+              "name": "last_contact",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "client_timezone",
+              "value": "={{ $json.detected_timezone }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "6f28ff43-694c-4766-84ca-3b09e982568a",
+      "name": "Prepare Client Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -256,
+        544
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "NEEDS_RESCHEDULE",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "reschedule_reason",
+              "value": "={{ $json.meeting_issue_type }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "reschedule_notes",
+              "value": "={{ $json.notes }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "47b29815-13b4-4f06-85da-3e71464b28da",
+      "name": "Prepare Reschedule Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -624,
+        1712
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -544,
+        2336
+      ],
+      "id": "5ce97cf3-297b-4279-93a5-ba82744f414d",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "CaWfXpqifeKiRlYx",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Zoho Initial Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zoho Reschedule Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Reschedule Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Cron Followup": {
+      "main": [
+        [
+          {
+            "node": "DB Get Stalled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Source Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Source Router": {
+      "main": [
+        [
+          {
+            "node": "Handle Zoho Initial",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle Zoho Reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Handle WhatsApp Reply",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DB Get Stalled",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Zoho Initial": {
+      "main": [
+        [
+          {
+            "node": "DB Upsert Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Upsert Client": {
+      "main": [
+        [
+          {
+            "node": "Generate Slots",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Time Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Slots": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Initial",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Initial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Initial": {
+      "main": [
+        [
+          {
+            "node": "DB Update Initial Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Initial": {
+      "main": [
+        [
+          {
+            "node": "DB Update Initial Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle Zoho Reschedule": {
+      "main": [
+        [
+          {
+            "node": "DB Mark Needs Reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Mark Needs Reschedule": {
+      "main": [
+        [
+          {
+            "node": "WhatsApp Reschedule Prompt",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generate Time Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Handle WhatsApp Reply": {
+      "main": [
+        [
+          {
+            "node": "DB Lookup By Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Lookup By Phone": {
+      "main": [
+        [
+          {
+            "node": "Decide Vague or Clear",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Route By Response Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide Vague or Clear": {
+      "main": [
+        [
+          {
+            "node": "Send Clarification Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Get Stalled": {
+      "main": [
+        [
+          {
+            "node": "Check Followup Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Followup WA": {
+      "main": [
+        [
+          {
+            "node": "DB Increment Followup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Followup Email": {
+      "main": [
+        [
+          {
+            "node": "DB Increment Followup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "WhatsApp Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Client Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Parse Client Response",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Parse Client Response",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Check Interest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Interest": {
+      "main": [
+        [
+          {
+            "node": "Store Form Responses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Form Responses": {
+      "main": [
+        [
+          {
+            "node": "Detect Timezone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detect Timezone": {
+      "main": [
+        [
+          {
+            "node": "Prepare Client Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Client Data": {
+      "main": [
+        [
+          {
+            "node": "DB Upsert Client",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Time Slots": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Initial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Client Response": {
+      "main": [
+        [
+          {
+            "node": "DB Lookup By Phone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By Response Type": {
+      "main": [
+        [
+          {
+            "node": "Generate Time Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Reschedule Data": {
+      "main": [
+        [
+          {
+            "node": "DB Mark Needs Reschedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Followup Limit": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Followup Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send WhatsApp Message": {
+      "main": [
+        [
+          {
+            "node": "DB Increment Followup",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Check Event Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Event Status": {
+      "main": [
+        [
+          {
+            "node": "Check Event Declined",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Event Declined": {
+      "main": [
+        [
+          {
+            "node": "Generate Time Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8457576b-2aec-49ee-b6b5-4de7ebdb6284",
+  "meta": {
+    "instanceId": "b62b62f5a8db0ba3721aa443ef733e20e82ec84d58dd2c47f49d2dcd07b82bba"
+  },
+  "id": "qWuddHjqYKnyVQzI",
+  "tags": []
+}

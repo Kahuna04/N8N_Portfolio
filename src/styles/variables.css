@@ -1,0 +1,39 @@
+:root {
+  /* Colors */
+  --bg-color: #030305;
+  --bg-secondary: #0A0A0E;
+  --surface-color: #121218;
+  --surface-hover: #1A1A22;
+  --border-color: #2A2A35;
+  
+  /* Accents */
+  --primary: #00E5FF;
+  --primary-glow: rgba(0, 229, 255, 0.4);
+  --secondary: #7B61FF;
+  --secondary-glow: rgba(123, 97, 255, 0.4);
+  --accent-gradient: linear-gradient(135deg, var(--primary), var(--secondary));
+  
+  /* Text */
+  --text-main: #FFFFFF;
+  --text-secondary: #C0C0C0;
+  --text-muted: #707070;
+  
+  /* Typography */
+  --font-main: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace; /* Good for code/workflows */
+
+  /* Spacing & Layout */
+  --container-width: 1200px;
+  --header-height: 80px;
+  
+  /* Radius */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  /* Animation */
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}

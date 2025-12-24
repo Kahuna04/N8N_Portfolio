@@ -1,0 +1,355 @@
+{
+  "name": "Invoice & Payment Tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fdfa4ff6-a714-4de9-a8f4-aed79d717c29",
+              "name": "Client Name",
+              "value": "={{ $json.body.data.customer.name }}",
+              "type": "string"
+            },
+            {
+              "id": "0132bb74-6bfb-4570-8230-87c90554dd2b",
+              "name": "Email",
+              "value": "={{ $json.body.data.customer.email }}",
+              "type": "string"
+            },
+            {
+              "id": "cb4cee30-d942-4da8-9fc7-3af1cc56e47c",
+              "name": "Invoice ID",
+              "value": "={{ $json.body.data.tx_ref }}",
+              "type": "string"
+            },
+            {
+              "id": "f612ddb2-b562-4e40-95a6-ca5b6e84ecb8",
+              "name": "Amount",
+              "value": "={{ $json.body.data.amount }}",
+              "type": "number"
+            },
+            {
+              "id": "17072039-f7fe-4f16-b0a2-1ab19a6a1e43",
+              "name": "Payment Date",
+              "value": "={{ $json.body.data.created_at }}",
+              "type": "string"
+            },
+            {
+              "id": "7b07e854-1cca-4af4-85d0-8c343f225951",
+              "name": "Status",
+              "value": "={{ $json.body.data.status }}",
+              "type": "string"
+            },
+            {
+              "id": "5fbb8d43-0d48-4b47-b46a-e6ccfc99480d",
+              "name": "Payment Method",
+              "value": "Flutterwave",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db143b09-9f51-4803-b623-279baa322dac",
+      "name": "Extract Payment Data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -48,
+        -112
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appHrrsT7ROZRMitM",
+          "mode": "list",
+          "cachedResultName": "Payments Tracker",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Payments",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "405f1ea1-3c54-493b-b3b4-ad05a0f5eabe",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        128,
+        -112
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JmJ2TYyud99El8Cd",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09LS6FDG1K",
+          "mode": "list",
+          "cachedResultName": "payments"
+        },
+        "text": "=💰 New payment received: {{ $json.fields.Amount }}\nfrom {{ $json.fields[\"Client Name\"] }}\nInvoice: {{ $json.fields[\"Invoice ID\"] }}",
+        "otherOptions": {}
+      },
+      "id": "c391b094-9f94-429d-9b77-42172a6ebe5b",
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        304,
+        -112
+      ],
+      "typeVersion": 2.3,
+      "webhookId": "d163e40c-c3a0-421d-97ea-7ce65520cad7",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "jIPtB17fYAkn0OP8",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Log to Airtable').item.json.fields.Email }}",
+        "subject": "=Payment Receipt - Invoice {{ $('Log to Airtable').item.json.fields[\"Invoice ID\"] }}",
+        "emailType": "text",
+        "message": "=Hi {{ $('Log to Airtable').item.json.fields[\"Client Name\"] }},\nWe’ve received your payment of ${{ $('Log to Airtable').item.json.fields.Amount }}.\nInvoice ID: {{ $('Log to Airtable').item.json.fields[\"Invoice ID\"] }}\nThank you for your business!\n\nKahuna",
+        "options": {}
+      },
+      "id": "c0e179de-123b-4b22-87e5-77d921555fd9",
+      "name": "Send Receipt (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        560,
+        -112
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "1777f591-56e8-4832-a777-0cbbb8f2d192",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6LAGkB9Kf7Vg4RXw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "triggerTimes": {
+          "item": [
+            {
+              "hour": 8
+            }
+          ]
+        }
+      },
+      "id": "6f18d424-f2be-47f3-b44a-ee3724dcb1d2",
+      "name": "Daily Check (Cron)",
+      "type": "n8n-nodes-base.cron",
+      "position": [
+        -304,
+        208
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appHrrsT7ROZRMitM",
+          "mode": "list",
+          "cachedResultName": "Payments Tracker",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM"
+        },
+        "table": "Payments",
+        "filterByFormula": "AND(Status='Pending', IS_BEFORE({Payment Date}, DATEADD(TODAY(), -7, 'days')))",
+        "options": {}
+      },
+      "id": "13dcdf7c-b042-4319-949d-5bc8a557c6ec",
+      "name": "Find Pending Invoices",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        -48,
+        208
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JmJ2TYyud99El8Cd",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.Email }}",
+        "subject": "=Reminder: Invoice {{$json[\"Invoice ID\"]}} Pending",
+        "emailType": "text",
+        "message": "=Hello {{$json[\"Client Name\"]}},\n\nThis is a friendly reminder that your invoice {{$json[\"Invoice ID\"]}} is still pending. \nPlease make your payment at your earliest convenience.\n\n— Kahuna",
+        "options": {}
+      },
+      "id": "d2fa7b92-2fe7-49f7-a7f8-7e55c70b184c",
+      "name": "Send Reminder (Gmail)",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        224,
+        208
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "90f0cd5b-028a-408d-813d-573059df7b7e",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6LAGkB9Kf7Vg4RXw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "postMessage"
+      },
+      "id": "353184fa-696f-423f-9c74-1364ac21afca",
+      "name": "Pending Alert (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        480,
+        208
+      ],
+      "typeVersion": 2.3,
+      "webhookId": "66d51091-cba1-4fbc-a15f-a44b6c4b6ee4",
+      "credentials": {
+        "slackApi": {
+          "id": null,
+          "name": "Slack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "flutterwave/payment",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        -112
+      ],
+      "id": "44cc55ce-c8b1-4db5-904e-0a9c354df14e",
+      "name": "Payment webhook",
+      "webhookId": "9bbe988a-ba6e-48c7-9a0e-65ae1660c131"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Extract Payment Data": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Airtable": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Notification": {
+      "main": [
+        [
+          {
+            "node": "Send Receipt (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily Check (Cron)": {
+      "main": [
+        [
+          {
+            "node": "Find Pending Invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Pending Invoices": {
+      "main": [
+        [
+          {
+            "node": "Send Reminder (Gmail)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Reminder (Gmail)": {
+      "main": [
+        [
+          {
+            "node": "Pending Alert (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Payment webhook": {
+      "main": [
+        [
+          {
+            "node": "Extract Payment Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2ede47de-77e8-47ba-a2c0-8255584c37a2",
+  "meta": {
+    "instanceId": "ba696ffb7fdca3fb0713f9a7b2082d31c8d5b41a354c5dd4487f0ca9bf199b3b"
+  },
+  "id": "A3EboyNEumIYY7l5",
+  "tags": []
+}

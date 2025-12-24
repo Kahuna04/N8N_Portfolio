@@ -1,0 +1,781 @@
+{
+  "name": "Smart Scheduling with Automated Confirmations and Lead Management",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "new-lead",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "56397470-0569-4087-a341-a85f054de2ed",
+      "name": "New Lead Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        1008
+      ],
+      "webhookId": "1a3ab583-62b2-4eb8-948f-da69ea43822b"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "workingHoursStart",
+              "value": "10:00",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "workingHoursEnd",
+              "value": "16:00",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "slotDuration",
+              "value": 30,
+              "type": "number"
+            },
+            {
+              "id": "id-4",
+              "name": "numberOfSlots",
+              "value": 3,
+              "type": "number"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "7a4de219-729e-485f-a3c1-4a52f09eebb8",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -608,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "app3L9kvWDFTomBH1",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWPZKrxd0go6JCe",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1/tblWPZKrxd0go6JCe"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $('New Lead Webhook').item.json.body.name }}",
+            "email": "={{ $('New Lead Webhook').item.json.body.email }}",
+            "phone": "={{ $('New Lead Webhook').item.json.body.phone }}",
+            "source": "={{ $('New Lead Webhook').item.json.body.source }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1972f458-56fe-40e9-a3e1-3fa058b56f96",
+      "name": "Store Lead in Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -384,
+        1008
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "HTtrW1UWuBtlCAA3",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const slots = ['Tomorrow 10:00', 'Tomorrow 13:00', 'Tomorrow 15:00']; return [{ json: { ...$json, slots } }];"
+      },
+      "id": "35509506-5f43-41c5-9021-48f4bc51ba48",
+      "name": "Generate Time Slots",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -160,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.fields.email }}",
+        "subject": "Let's schedule your call",
+        "message": "=Hi {{ $json.fields.name }},\n\nThanks for reaching out. Here are some times that could work: {{ $json.slots[0] }}, {{ $json.slots[1] }}, {{ $json.slots[2] }}. \n\nReply with the option that suits you, or suggest another time between 10:00–16:00 your time.",
+        "options": {}
+      },
+      "id": "01590875-0d86-4db0-b6cc-7b4719c41206",
+      "name": "Send Slot Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        64,
+        1008
+      ],
+      "webhookId": "61ce6daf-a6c7-4773-9080-da8182c778f3",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uw1do1VFdTsTYjLR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyX",
+              "value": 5,
+              "unit": "minutes"
+            }
+          ]
+        },
+        "filters": {
+          "q": "subject:(\"schedule your call\" OR \"re:\")"
+        }
+      },
+      "id": "9ca6239c-81d7-4d07-9d2a-99f656ebea28",
+      "name": "Email Reply Trigger",
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -832,
+        1344
+      ],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uw1do1VFdTsTYjLR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extract email details from Gmail trigger\nconst items = $input.all();\n\n// Helper function to decode HTML entities\nfunction decodeHtmlEntities(text) {\n  const entities = {\n    '&lt;': '<',\n    '&gt;': '>',\n    '&amp;': '&',\n    '&quot;': '\"',\n    '&#39;': \"'\",\n    '&nbsp;': ' '\n  };\n  \n  return text.replace(/&[a-z]+;|&#\\d+;/gi, match => entities[match] || match);\n}\n\n// Helper function to extract email from \"Name <email@example.com>\" format\nfunction extractEmail(fromField) {\n  if (!fromField) return '';\n  \n  // Check if email is in angle brackets\n  const emailMatch = fromField.match(/<([^>]+)>/);\n  if (emailMatch) {\n    return emailMatch[1];\n  }\n  \n  // If no angle brackets, assume the whole string is the email\n  return fromField.trim();\n}\n\nconst results = items.map(item => {\n  const data = item.json;\n  \n  const senderRaw = data.From || '';\n  const sender = extractEmail(senderRaw);\n  const subject = data.Subject || '';\n  const to = data.To || '';\n  \n  // Extract body text - try multiple sources\n  let bodyText = '';\n  if (data.bodyText) {\n    bodyText = data.bodyText;\n  } else if (data.body) {\n    bodyText = data.body;\n  } else if (data.snippet) {\n    bodyText = data.snippet;\n  }\n  \n  // Decode HTML entities\n  if (bodyText) {\n    bodyText = decodeHtmlEntities(bodyText);\n  }\n  \n  return {\n    json: {\n      sender,\n      subject,\n      to,\n      bodyText,\n      messageId: data.id || '',\n      threadId: data.threadId || '',\n      internalDate: data.internalDate || '',\n      labels: data.labels || []\n    }\n  };\n});\n\nreturn results;"
+      },
+      "id": "43fa7a38-cd79-4cc2-839d-b765d6280621",
+      "name": "Extract Email Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -608,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.bodyText }}, {{ $json.sender }}",
+        "options": {
+          "systemMessage": "You are a scheduling assistant. Extract the preferred meeting time from the email reply. The user was offered these slots: Tomorrow 10:00, Tomorrow 13:00, Tomorrow 15:00. Parse their response and return ONLY the selected time slot in format 'Tomorrow HH:MM'. If they suggest a different time, return that time. If unclear, return 'UNCLEAR'."
+        }
+      },
+      "id": "09ed425e-5625-4836-8c42-9e322fcce254",
+      "name": "Parse Time Selection AI",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -384,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "9e56bc45-05d2-437e-9f2e-84f57d0f9e6a",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -320,
+        1568
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "SqUt7QiFE2h5ANvV",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "app3L9kvWDFTomBH1",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWPZKrxd0go6JCe",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1/tblWPZKrxd0go6JCe"
+        },
+        "filterByFormula": "=FIND('{{ $('Extract Email Details').item.json.sender }}', {email})",
+        "options": {}
+      },
+      "id": "ef321897-a630-4b06-9263-dc913796a0b2",
+      "name": "Get Lead from Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        -32,
+        1344
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "HTtrW1UWuBtlCAA3",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "ogundeledamilare4@gmail.com",
+          "mode": "list",
+          "cachedResultName": "ogundeledamilare4@gmail.com"
+        },
+        "start": "={{ $json.startDateTime }}",
+        "end": "={{ $json.endDateTime }}",
+        "additionalFields": {
+          "attendees": [
+            "={{ $json.email }}"
+          ],
+          "description": "=Scheduled call with lead from {{ $json.source }}",
+          "summary": "=Call with {{ $json.name }}"
+        }
+      },
+      "id": "1d38f962-ae3b-4537-847c-89bd367e4300",
+      "name": "Create Calendar Event",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        416,
+        1344
+      ],
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "kDzBxSHVgzFhHGGJ",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.attendees[0].email }}",
+        "subject": "Meeting Confirmed!",
+        "message": "=Hi {{ $('Convert Time to DateTime').item.json.name }},\n\nYour meeting has been confirmed! Time: {{ $('Parse Time Selection AI').item.json.output }}. Calendar invite has been sent. \n\nLooking forward to speaking with you!",
+        "options": {}
+      },
+      "id": "865e2d91-29ac-4012-ac36-497e5cb1d2e8",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        1344
+      ],
+      "webhookId": "fc3ebdcd-cbff-47a8-91b1-441a573a309c",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uw1do1VFdTsTYjLR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "app3L9kvWDFTomBH1",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblWPZKrxd0go6JCe",
+          "mode": "list",
+          "cachedResultName": "Table 1",
+          "cachedResultUrl": "https://airtable.com/app3L9kvWDFTomBH1/tblWPZKrxd0go6JCe"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $('Get Lead from Airtable').item.json.id }}",
+            "status": "booked",
+            "booked_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "source",
+              "displayName": "source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "booked_at",
+              "displayName": "booked_at",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "7266d7de-b9cc-4786-98eb-92f3b5da19b7",
+      "name": "Update Lead Status",
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        864,
+        1344
+      ],
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "HTtrW1UWuBtlCAA3",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get the AI output time string (e.g., 'Tomorrow 10:00')\nconst items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const timeString = $('Parse Time Selection AI').item.json.output;\n  \n  // Parse the time string\n  let startTime;\n  \n  if (timeString.toLowerCase().includes('tomorrow')) {\n    // Extract the time part (e.g., '10:00')\n    const timeMatch = timeString.match(/(\\d{1,2}):(\\d{2})/);\n    \n    if (timeMatch) {\n      const hours = parseInt(timeMatch[1]);\n      const minutes = parseInt(timeMatch[2]);\n      \n      // Create tomorrow's date at the specified time\n      startTime = $now.plus({ days: 1 }).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 });\n    } else {\n      // Fallback: use tomorrow at 10:00 if parsing fails\n      startTime = $now.plus({ days: 1 }).set({ hour: 10, minute: 0, second: 0, millisecond: 0 });\n    }\n  } else {\n    // Try to parse other formats or use current time + 1 day as fallback\n    startTime = $now.plus({ days: 1 }).set({ hour: 10, minute: 0, second: 0, millisecond: 0 });\n  }\n  \n  // Calculate end time (30 minutes after start)\n  const endTime = startTime.plus({ minutes: 30 });\n  \n  // Return the data with ISO formatted times\n  results.push({\n    json: {\n      ...item.json,\n      startDateTime: startTime.toISO(),\n      endDateTime: endTime.toISO(),\n      parsedTimeString: timeString\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "246a6f4b-e124-4257-963a-c43cde77db5c",
+      "name": "Convert Time to DateTime",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        192,
+        1344
+      ]
+    }
+  ],
+  "pinData": {
+    "Email Reply Trigger": [
+      {
+        "json": {
+          "id": "19b294d5801e6a76",
+          "threadId": "19b294c51cdf9175",
+          "snippet": "Hello, I m okay with Tomorrow 13:00 On Tue, Dec 16, 2025 at 11:33 PM &lt;ogundeledamilare4@gmail.com&gt; wrote: Hi John Doe, Thanks for reaching out. Here are some times that could work: Tomorrow 10:00",
+          "payload": {
+            "mimeType": "multipart/alternative"
+          },
+          "sizeEstimate": 2405,
+          "historyId": "4448667",
+          "internalDate": "1765924237000",
+          "labels": [
+            {
+              "id": "SENT",
+              "name": "SENT"
+            },
+            {
+              "id": "INBOX",
+              "name": "INBOX"
+            },
+            {
+              "id": "IMPORTANT",
+              "name": "IMPORTANT"
+            },
+            {
+              "id": "UNREAD",
+              "name": "UNREAD"
+            }
+          ],
+          "Subject": "Re: Let's schedule your call",
+          "From": "Damilare Ogundele <ogundeledamilare4@gmail.com>",
+          "To": "ogundele.damilare4@gmail.com"
+        }
+      }
+    ],
+    "Parse Time Selection AI": [
+      {
+        "json": {
+          "output": "Tomorrow 13:00"
+        }
+      }
+    ],
+    "Convert Time to DateTime": [
+      {
+        "json": {
+          "id": "rec6v5Nx5S7XUykCm",
+          "createdTime": "2025-12-16T22:32:41.000Z",
+          "name": "John Doe",
+          "email": "ogundeledamilare4@gmail.com",
+          "phone": "+1234567890",
+          "source": "website-form",
+          "startDateTime": "2025-12-18T13:00:00.000+01:00",
+          "endDateTime": "2025-12-18T13:30:00.000+01:00",
+          "parsedTimeString": "Tomorrow 13:00"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Create Calendar Event": [
+      {
+        "json": {
+          "id": "4rvb4vmk7q4cbf89erapbc4640",
+          "summary": "Call with John Doe",
+          "start": {
+            "dateTime": "2025-12-18T12:00:00Z",
+            "timeZone": "Africa/Lagos"
+          },
+          "end": {
+            "dateTime": "2025-12-18T12:30:00Z",
+            "timeZone": "Africa/Lagos"
+          },
+          "attendees": [
+            {
+              "email": "ogundeledamilare4@gmail.com",
+              "organizer": true,
+              "self": true,
+              "responseStatus": "needsAction"
+            }
+          ],
+          "creator": {
+            "email": "ogundeledamilare4@gmail.com",
+            "self": true
+          },
+          "organizer": {
+            "email": "ogundeledamilare4@gmail.com",
+            "self": true
+          },
+          "description": "Scheduled call with lead from website-form",
+          "created": "2025-12-16T23:35:42.000Z",
+          "updated": "2025-12-16T23:35:42.467Z",
+          "etag": "\"3531856284935998\"",
+          "eventType": "default",
+          "htmlLink": "https://www.google.com/calendar/event?eid=NHJ2YjR2bWs3cTRjYmY4OWVyYXBiYzQ2NDAgb2d1bmRlbGVkYW1pbGFyZTRAbQ",
+          "iCalUID": "4rvb4vmk7q4cbf89erapbc4640@google.com",
+          "kind": "calendar#event",
+          "reminders": {
+            "useDefault": true
+          },
+          "sequence": 0,
+          "status": "confirmed"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ],
+    "Update Lead Status": [
+      {
+        "json": {
+          "id": "rec6v5Nx5S7XUykCm",
+          "createdTime": "2025-12-16T22:32:41.000Z",
+          "fields": {
+            "name": "John Doe",
+            "email": "ogundeledamilare4@gmail.com",
+            "phone": "+1234567890",
+            "source": "website-form",
+            "status": "booked",
+            "booked_at": "2025-12-16T23:36:40.175Z"
+          }
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "New Lead Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Store Lead in Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Lead in Airtable": {
+      "main": [
+        [
+          {
+            "node": "Generate Time Slots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Time Slots": {
+      "main": [
+        [
+          {
+            "node": "Send Slot Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Reply Trigger": {
+      "main": [
+        [
+          {
+            "node": "Extract Email Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Email Details": {
+      "main": [
+        [
+          {
+            "node": "Parse Time Selection AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Parse Time Selection AI",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Time Selection AI": {
+      "main": [
+        [
+          {
+            "node": "Get Lead from Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Calendar Event": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Update Lead Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Lead from Airtable": {
+      "main": [
+        [
+          {
+            "node": "Convert Time to DateTime",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert Time to DateTime": {
+      "main": [
+        [
+          {
+            "node": "Create Calendar Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "06403d04-bd52-477d-9270-7ca07f9d9c07",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b62b62f5a8db0ba3721aa443ef733e20e82ec84d58dd2c47f49d2dcd07b82bba"
+  },
+  "id": "6UF98h3qZOun0Qe9",
+  "tags": []
+}

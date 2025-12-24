@@ -1,0 +1,563 @@
+{
+  "name": "Automated Content Distribution Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -624,
+        -256
+      ],
+      "id": "d7759720-b5ac-4391-a447-5a20173edee4",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/wp-json/wp/v2/posts?per_page=2&_embed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        -256
+      ],
+      "id": "50383a19-28e5-49b2-9317-b6f796f7ff0c",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\nconst posts = $input.all();\nconst yesterday = new Date();\nyesterday.setDate(yesterday.getDate() - 1);\n\n// Filter posts from last 24 hours\nconst recentPosts = posts.filter(post => {\n  const postDate = new Date(post.json.date);\n  return postDate > yesterday;\n});\n\n// If no new posts, stop workflow\nif (recentPosts.length === 0) {\n  return [];\n}\n\nreturn recentPosts;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        -256
+      ],
+      "id": "1e1b77c3-6612-47bd-8e70-824ac900db9d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "1d470fee-62de-4e05-8b27-d67b179c84aa",
+              "name": "=Post_ID",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "70d33f3f-4bc6-447c-91ce-64d031caab1b",
+              "name": "Title",
+              "value": "={{ $json.title.rendered }} ",
+              "type": "string"
+            },
+            {
+              "id": "efe1051e-9ba1-4433-a23e-df70879aad50",
+              "name": "Content",
+              "value": "={{ $json.content.rendered }}",
+              "type": "string"
+            },
+            {
+              "id": "f101a9ca-3eb5-4d1e-b1a1-0eb8ec59a225",
+              "name": "Excerpt",
+              "value": "={{ $json.excerpt.rendered }}",
+              "type": "string"
+            },
+            {
+              "id": "1c59d16f-5cda-427a-ae53-7729e1264139",
+              "name": "URL",
+              "value": "={{ $json.link }} ",
+              "type": "string"
+            },
+            {
+              "id": "34a632bd-132a-42c9-991a-a02e0014222d",
+              "name": "Published_Date",
+              "value": "={{ $json.date }}",
+              "type": "string"
+            },
+            {
+              "id": "1dbebc75-301b-444f-a798-d7f16927063c",
+              "name": "Author",
+              "value": "={{ $json._embedded?.author?.[0]?.name || \"Unknown\" }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        48,
+        -256
+      ],
+      "id": "cdf7acd2-0cda-4c91-8d87-766dec116256",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=   Summarize this blog post in 2-3 engaging sentences:\n   \n   Title: {{ $node['Edit Fields'].json.Title }}\n   Content: {{ $node['Edit Fields'].json.Content }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        640,
+        -256
+      ],
+      "id": "6a045b15-e8d0-4c41-a9b1-b8534cfba0a9",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "wqoKCOVtu7umrAyQ",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "1219311495",
+        "text": "=📰 New Blog Post!        \n*{{ $node['Format'].json.Original_Title }}*\n{{ $node['Format'].json.AI_Summary }}🔗 [Read More]({{ $node['Format'].json.Post_URL }})\n📅 Published: {{ $node['Format'].json.Published_Date }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        -256
+      ],
+      "id": "0236315b-58ad-4859-894c-20fffde0b5a5",
+      "name": "Send a text message",
+      "webhookId": "31032d89-3afd-442d-8915-0ba59e43bc65",
+      "credentials": {
+        "telegramApi": {
+          "id": "s5TcNMa53t86kXUw",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b8c15087-91da-4986-9013-fe0ed3831c4b",
+              "leftValue": "={{ $('Lookup Post_Id').all().length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1104,
+        384
+      ],
+      "id": "36520569-e1f2-49a7-accd-8e0ba0931bd5",
+      "name": "If",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Post_ID",
+              "lookupValue": "={{ $json.Post_ID }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -1280,
+        368
+      ],
+      "id": "ea75c89b-1af1-40fe-b81f-bb9031929045",
+      "name": "Lookup Post_Id",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTvdX8jttOZ92hJ9",
+          "name": "Google Sheets account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "d9123f13-8697-4936-98c1-f7fb4349d656",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1104,
+        160
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Post_ID",
+              "displayName": "Post_ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Content",
+              "displayName": "Content",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1136,
+        -256
+      ],
+      "id": "61b86109-d056-4acc-bbab-c587b274c2a8",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTvdX8jttOZ92hJ9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "amount": 3
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        464,
+        -256
+      ],
+      "id": "14d688f3-d23d-4237-ae47-aa6526f25316",
+      "name": "Wait",
+      "webhookId": "360a0712-a45c-4530-b4f4-599c26cd52a3"
+    },
+    {
+      "parameters": {
+        "chatId": "1219311495",
+        "text": "=📰 Blog Post already exist! \n\nTitle: {{ $node['Edit Fields'].json.Title }} \n📅 Published: {{ $node['Edit Fields'].json.Published_Date }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        -768,
+        352
+      ],
+      "id": "06466c43-bd08-4749-9ac5-2fc4149858fb",
+      "name": "Send a text message1",
+      "webhookId": "d1ced5c2-04a4-4568-bb5b-b877c71aaaf9",
+      "credentials": {
+        "telegramApi": {
+          "id": "s5TcNMa53t86kXUw",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3110b5a1-f2fb-466f-918b-020dbaf313c0",
+              "name": "=AI_Summary",
+              "value": "={{ $json.choices[0].message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "3e8cb369-04ce-4edd-b87d-f5f281e475c7",
+              "name": "Original_Title",
+              "value": "={{ $node['Edit Fields'].json.Title }}",
+              "type": "string"
+            },
+            {
+              "id": "b9a76067-49be-41dd-b558-f9e431e2649b",
+              "name": "=Post_URL ",
+              "value": "={{ $node['Edit Fields'].json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "fa92fc50-1b9f-43b1-a0c4-f4cf0bcf0162",
+              "name": "=Published_Date",
+              "value": "={{ $node['Edit Fields'].json.Published_Date }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        944,
+        -256
+      ],
+      "id": "5e21a3b4-9c73-4de9-ab06-638a59258543",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  // Strip HTML tags\n  const cleanContent = item.json.Content.replace(/<[^>]*>/g, '');\n  const cleanExcerpt = item.json.Excerpt.replace(/<[^>]*>/g, '');\n  \n  return {\n    json: {\n      ...item.json,\n      Content: cleanContent.substring(0, 2000), // Limit for OpenAI\n      Excerpt: cleanExcerpt\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -256
+      ],
+      "id": "8035069e-53c4-4876-bf1c-ffdf4c2c035a",
+      "name": "Clean"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Clean",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Send a text message1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lookup Post_Id": {
+      "main": [
+        []
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e440abef-961b-4c69-9c87-b1c7662d5ee0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba696ffb7fdca3fb0713f9a7b2082d31c8d5b41a354c5dd4487f0ca9bf199b3b"
+  },
+  "id": "RVRYogAJB10TvChE",
+  "tags": []
+}

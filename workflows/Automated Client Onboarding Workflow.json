@@ -1,0 +1,270 @@
+{
+  "name": "Automated Client Onboarding Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "01a3b8b2-b588-4724-93a7-398a75209702",
+      "name": "Parse & Validate Data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        288,
+        0
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "createFolder"
+      },
+      "id": "337d227b-03e5-4fbd-9be2-210ecec070be",
+      "name": "Create Project Folder",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        544,
+        0
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": null,
+          "name": "Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "functionCode": "const subfolders = ['Contracts','Assets','Deliverables','Invoices'];\nreturn subfolders.map(f => ({ json: { folderName: f, parentId: $json.id } }));"
+      },
+      "id": "afe53c68-40d7-46fa-9ed6-f00cd18cefe7",
+      "name": "Create Subfolders",
+      "type": "n8n-nodes-base.function",
+      "position": [
+        800,
+        0
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "operation": "createFolder"
+      },
+      "id": "c8885803-4b57-49d9-92d3-c15e03281306",
+      "name": "Create Subfolder in Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "position": [
+        1072,
+        0
+      ],
+      "typeVersion": 3,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": null,
+          "name": "Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createPage"
+      },
+      "id": "749dc042-eaf7-4c16-8ef5-d0f769c2a17b",
+      "name": "Create Notion Page",
+      "type": "n8n-nodes-base.notion",
+      "position": [
+        1328,
+        0
+      ],
+      "typeVersion": 2.2,
+      "credentials": {
+        "notionApi": {
+          "id": null,
+          "name": "Notion"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendEmail"
+      },
+      "id": "8363aa03-cbfd-40c1-8f77-a2a842716506",
+      "name": "Send Welcome Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        1584,
+        0
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "cc98b71b-d49a-439f-8622-4a7fdaa8c69f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": null,
+          "name": "Gmail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "postMessage"
+      },
+      "id": "17d4e5a8-32eb-42dd-9785-8c8f7a69b7d9",
+      "name": "Notify Team (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        1840,
+        0
+      ],
+      "typeVersion": 2.3,
+      "webhookId": "bf839b63-77b2-403f-bac7-070e3dd61afd",
+      "credentials": {
+        "slackApi": {
+          "id": null,
+          "name": "Slack"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "table": "Client Onboarding Logs",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {}
+        },
+        "options": {}
+      },
+      "id": "4b6033e0-2dfa-41c2-821f-1d61f044f8c5",
+      "name": "Log to Airtable",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        2112,
+        0
+      ],
+      "typeVersion": 2.1,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "googleform/onboarding",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        0
+      ],
+      "id": "55f558df-8b7d-4642-8ff1-4d1d63c36531",
+      "name": "Google Form Webhook",
+      "webhookId": "d1011616-f044-47a0-b67d-79477d600843"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Parse & Validate Data": {
+      "main": [
+        [
+          {
+            "node": "Create Project Folder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Project Folder": {
+      "main": [
+        [
+          {
+            "node": "Create Subfolders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Subfolders": {
+      "main": [
+        [
+          {
+            "node": "Create Subfolder in Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Subfolder in Drive": {
+      "main": [
+        [
+          {
+            "node": "Create Notion Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Notion Page": {
+      "main": [
+        [
+          {
+            "node": "Send Welcome Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Welcome Email": {
+      "main": [
+        [
+          {
+            "node": "Notify Team (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notify Team (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Log to Airtable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Form Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse & Validate Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "78b6470d-782c-4340-82fb-0231f68547b7",
+  "meta": {
+    "instanceId": "ba696ffb7fdca3fb0713f9a7b2082d31c8d5b41a354c5dd4487f0ca9bf199b3b"
+  },
+  "id": "bc3sPdFYGo8DgKhH",
+  "tags": []
+}

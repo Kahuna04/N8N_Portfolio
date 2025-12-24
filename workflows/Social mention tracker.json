@@ -1,0 +1,238 @@
+{
+  "name": "Social mention tracker",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        32,
+        0
+      ],
+      "id": "09a64f06-2e59-444a-a5d7-ed11cbfbecde",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://hn.algolia.com/api/v1/search?query=automation&hitsPerPage=10",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "6d4bd9c3-716c-450c-8d2d-f836780f463d",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2f6eba45-f5c6-450b-9535-04be3fc42fe5",
+              "name": "Title",
+              "value": "={{ $json.Title }}",
+              "type": "string"
+            },
+            {
+              "id": "75a6fac9-ae6f-4a58-b3ef-528f5f4cb6ea",
+              "name": "Author",
+              "value": "={{ $json.Author }}",
+              "type": "string"
+            },
+            {
+              "id": "bd5369c3-2761-45d3-b0e7-f4367653d83e",
+              "name": "Points",
+              "value": "={{ $json.Points }}",
+              "type": "string"
+            },
+            {
+              "id": "cda001af-bc2f-4733-99cc-30563a10ea1b",
+              "name": "URL",
+              "value": "={{ $json.URL }}",
+              "type": "string"
+            },
+            {
+              "id": "7d2a8ecd-b14c-4766-ab0b-6803a06e2824",
+              "name": "Timestamp",
+              "value": "={{ new Date().toLocaleString() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        560,
+        0
+      ],
+      "id": "f64e3940-f059-479c-a838-6bec0467ae0b",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Check your incoming data structure\nconst data = $json.hits || $json.data || $json.results || $json;\n\n// If it's an array already, map it directly\nif (Array.isArray(data)) {\n  return data.map(hit => ({\n    json: {\n      Title: hit.title || hit.story_title || \"\",\n      Author: hit.author || \"\",\n      Points: hit.points || 0,\n      URL: hit.url || hit.story_url || \"\",\n      Timestamp: new Date().toLocaleString()\n    }\n  }));\n}\n\n// If it's not an array, just return one item\nreturn [\n  {\n    json: {\n      Title: data.title || \"\",\n      Author: data.author || \"\",\n      Points: data.points || 0,\n      URL: data.url || \"\",\n      Timestamp: new Date().toLocaleString()\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        384,
+        0
+      ],
+      "id": "5b71152f-aed7-462c-af6a-ba57a7aad93d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        0
+      ],
+      "id": "a97af57d-1012-4865-afa9-762fcf8022a4",
+      "name": "Google sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTvdX8jttOZ92hJ9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09M8NKE5CZ",
+          "mode": "list",
+          "cachedResultName": "n8n-training"
+        },
+        "text": "=New Mentions Found! \nKeyword: automate  \n{{ $json.Title }} 👤 \nBy: {{ $json.Author }}\nPoints: {{ $json.Points }} \n{{ $json.URL }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        0
+      ],
+      "id": "075d59fa-1ce3-4cff-8cda-97d474264742",
+      "name": "Notify me",
+      "webhookId": "71baa697-b753-4868-b3af-5124720d5491",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "jIPtB17fYAkn0OP8",
+          "name": "Slack account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Google sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google sheet": {
+      "main": [
+        [
+          {
+            "node": "Notify me",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "feacedf0-98f5-4a2a-95d7-f28014a60a97",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba696ffb7fdca3fb0713f9a7b2082d31c8d5b41a354c5dd4487f0ca9bf199b3b"
+  },
+  "id": "5aAdvTDK2B20cF6g",
+  "tags": []
+}

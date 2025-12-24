@@ -1,0 +1,504 @@
+{
+  "name": "OpenProdkt Leads",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "openprodkt-leads",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "cf1819d9-4883-4b3c-8ea7-0bda2ad5548e",
+      "name": "Webhook - Receive Lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -4048,
+        1120
+      ],
+      "webhookId": "c5aede07-4356-45d8-a5aa-67e5fd1d44fa"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-2",
+              "name": "postgresTable",
+              "value": "leads",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "slackChannel",
+              "value": "#n8n_alert",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "emailSequenceRecipient",
+              "value": "ogundele.damilare4@gmail.com",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "ga4MeasurementId",
+              "value": "G-2Y08G3GPTC",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "ga4ApiSecret",
+              "value": "<__PLACEHOLDER_VALUE__GA4 API Secret__>",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "b9f60fa3-be2c-453e-95a1-93f3d726c50c",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3824,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "leadName/Company",
+              "value": "={{ $json.body.name || $json.body.company_name }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "leadEmail",
+              "value": "={{ $json.body.email || $json.body.lead_email }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "leadPhone",
+              "value": "={{ $json.body.phone || $json.body.lead_phone }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "leadSource",
+              "value": "={{ $json.body.source || \"AWS API Gateway\" }}",
+              "type": "string"
+            },
+            {
+              "id": "id-7",
+              "name": "selectedProduct",
+              "value": "={{ $json.body.product || $json.body.select_product }}",
+              "type": "string"
+            },
+            {
+              "id": "id-8",
+              "name": "selectedService",
+              "value": "={{ $json.body.service || $json.body.select_service }}",
+              "type": "string"
+            },
+            {
+              "id": "id-9",
+              "name": "leadMessage",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "id-6",
+              "name": "submittedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "1ace3fb2-c100-4937-be00-0a9f8e88cd61",
+      "name": "Validate Lead Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3600,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Lead Data:\nCompany/Name: {{ $json[\"leadName/Company\"] }}\nEmail: {{ $json.leadEmail }}\nPhone: {{ $json.leadPhone }}\nSelected Product: {{ $json.selectedProduct }}\nSelected Service: {{ $json.selectedService }}\nMessage: {{ $json.leadMessage }}\nSource: {{ $json.leadSource }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an expert lead qualification AI analyzing incoming sales leads for OpenProdkt.\n\nYour task is to:\n1. Analyze the lead data including company/name, email, phone, selected product, selected service, message, and enrichment data\n2. Evaluate lead quality based on:\n   - Product interest (MariaDB, Drawio, MySQL, TimescaleDB, WordPress, Ubuntu, Postgres, ActualBudget, RabbitMQ)\n   - Service interest (AI-as-a-service/Generative AI, Cloud adoption/Migration, Automation/Virtual assistance, OpenPlatform/Kubernetes)\n   - Message clarity and intent signals\n   - Contact information completeness\n   - Company profile and enrichment data\n3. Generate a concise lead summary (2-3 sentences) highlighting product/service interest\n4. Calculate a lead score from 0-100 where:\n   - 0-30: Low quality (unclear intent, incomplete info)\n   - 31-69: Medium quality (some interest, needs nurturing)\n   - 70-100: High quality (clear intent, specific product/service interest, complete info)\n5. Identify key qualification factors (product fit, service alignment, urgency signals)\n6. Recommend next action (immediate follow-up for specific product/service, nurture campaign, or disqualify)\n\nReturn your analysis in the structured JSON format."
+        }
+      },
+      "id": "64fd1d27-da0e-4985-9aa3-1287a2f0e9ce",
+      "name": "AI Summarize & Score Lead",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -3376,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"leadScore\": {\n\t\t\t\"type\": \"number\",\n\t\t\t\"description\": \"Lead quality score from 0-100\"\n\t\t},\n\t\t\"leadQuality\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Lead quality tier: low, medium, or high\"\n\t\t},\n\t\t\"leadSummary\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Brief 2-3 sentence summary of the lead\"\n\t\t},\n\t\t\"qualificationFactors\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"description\": \"Key factors influencing qualification\"\n\t\t},\n\t\t\"recommendedAction\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Recommended next action\"\n\t\t}\n\t}\n}"
+      },
+      "id": "d4350f19-e683-4505-afef-4a564e3b5794",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -3248,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Workflow Configuration').first().json.postgresTable }}"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "eb4fe5e1-43e0-4861-bce2-2223147495a9",
+      "name": "Store Lead in Postgres",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3024,
+        1120
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "epxvO3xfxAm3P7by",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Workflow Configuration').first().json.emailSequenceRecipient }}",
+        "subject": "=New Lead: {{ $('Validate Lead Data').first().json.leadName }} (Score: {{ $json.leadScore }})",
+        "message": "=<h2>New Lead Received - OpenProdkt</h2>\n<p><strong>Company/Name:</strong> {{ $('Validate Lead Data').first().json.leadName }}</p>\n<p><strong>Email:</strong> {{ $('Validate Lead Data').first().json.leadEmail }}</p>\n<p><strong>Phone:</strong> {{ $('Validate Lead Data').first().json.leadPhone }}</p>\n<p><strong>Selected Product:</strong> {{ $('Validate Lead Data').first().json.selectedProduct }}</p>\n<p><strong>Selected Service:</strong> {{ $('Validate Lead Data').first().json.selectedService }}</p>\n<p><strong>Message:</strong> {{ $('Validate Lead Data').first().json.leadMessage }}</p>\n<p><strong>Source:</strong> {{ $('Validate Lead Data').first().json.leadSource }}</p>\n<hr>\n<h3>AI Analysis</h3>\n<p><strong>Lead Score:</strong> {{ $json.leadScore }}/100</p>\n<p><strong>Quality:</strong> {{ $json.leadQuality }}</p>\n<p><strong>Summary:</strong> {{ $json.leadSummary }}</p>\n<p><strong>Qualification Factors:</strong></p>\n<ul>\n{{ $json.qualificationFactors.map(factor => `<li>${factor}</li>`).join(\"\") }}\n</ul>\n<p><strong>Recommended Action:</strong> {{ $json.recommendedAction }}</p>\n<hr>\n<p><em>Lead stored in database and ready for follow-up.</em></p>",
+        "options": {}
+      },
+      "id": "6b9b6613-2535-45bb-acba-ef662b8d0d87",
+      "name": "Trigger Email Sequence",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -2800,
+        928
+      ],
+      "webhookId": "930d8a3a-6235-4768-9b79-945408ed4d59",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "uw1do1VFdTsTYjLR",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "={{ $('Workflow Configuration').first().json.slackChannel }}",
+          "mode": "id"
+        },
+        "text": "=🎯 *New OpenProdkt Lead Alert*\n\n*Company/Name:* {{ $('Validate Lead Data').first().json.leadName }}\n*Email:* {{ $('Validate Lead Data').first().json.leadEmail }}\n*Phone:* {{ $('Validate Lead Data').first().json.leadPhone }}\n\n*Product Interest:* {{ $('Validate Lead Data').first().json.selectedProduct }}\n*Service Interest:* {{ $('Validate Lead Data').first().json.selectedService }}\n\n*Message:*\n{{ $('Validate Lead Data').first().json.leadMessage }}\n\n---\n*AI Score:* {{ $json.leadScore }}/100 ({{ $json.leadQuality }} quality)\n*Summary:* {{ $json.leadSummary }}\n\n*Recommended Action:* {{ $json.recommendedAction }}\n\n✅ Lead stored in database and email sequence triggered.",
+        "otherOptions": {}
+      },
+      "id": "7ec944ae-6c78-4a5c-8967-0db2c1390eed",
+      "name": "Notify Sales via Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.4,
+      "position": [
+        -2800,
+        1120
+      ],
+      "webhookId": "fc7173d2-53ae-4d58-b827-7ad072215b41",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "DhQ27KzxsOI4Ohrq",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://www.google-analytics.com/mp/collect?measurement_id={{ $('Workflow Configuration').first().json.ga4MeasurementId }}&api_secret={{ $('Workflow Configuration').first().json.ga4ApiSecret }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"client_id\": \"{{ $('Validate Lead Data').first().json.leadEmail }}\",\n  \"events\": [{\n    \"name\": \"lead_submission\",\n    \"params\": {\n      \"lead_name\": \"{{ $('Validate Lead Data').item.json.body.company_name }}\",\n      \"lead_source\": \"{{ $('Validate Lead Data').first().json.leadSource }}\",\n      \"selected_product\": \"{{ $('Validate Lead Data').first().json.selectedProduct }}\",\n      \"selected_service\": \"{{ $('Validate Lead Data').first().json.selectedService }}\",\n      \"lead_score\": {{ $json.leadScore }},\n      \"lead_quality\": \"{{ $json.leadQuality }}\",\n      \"engagement_time_msec\": \"100\"\n    }\n  }]\n}",
+        "options": {}
+      },
+      "id": "bb46b4bc-7a88-4703-a508-60a5670fb0a4",
+      "name": "Send Event to Google Analytics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2800,
+        1312
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -3376,
+        1344
+      ],
+      "id": "8eb9864b-de6a-4e27-921b-290f53fe49a7",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "SqUt7QiFE2h5ANvV",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Webhook - Receive Lead": [
+      {
+        "json": {
+          "headers": {
+            "host": "olusamdel.app.n8n.cloud",
+            "user-agent": "curl/7.88.1",
+            "content-length": "331",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "129.205.124.220",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "NG",
+            "cf-ray": "9b1ffe62b52c83a2-MXP",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "129.205.124.220, 162.158.129.241",
+            "x-forwarded-host": "olusamdel.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-39-c65d8f959-xj9qw",
+            "x-is-trusted": "yes",
+            "x-real-ip": "129.205.124.220"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "company_name": "Acme Corp",
+            "phone": "+234-801-234-5678",
+            "email": "john.doe@acmecorp.com",
+            "select_product": "Postgres",
+            "select_service": "Cloud adoption/Migration",
+            "message": "We are interested in migrating our database infrastructure to the cloud. Please contact us to discuss our requirements."
+          },
+          "webhookUrl": "https://olusamdel.app.n8n.cloud/webhook-test/openprodkt-leads",
+          "executionMode": "test"
+        }
+      }
+    ],
+    "Validate Lead Data": [
+      {
+        "json": {
+          "headers": {
+            "host": "olusamdel.app.n8n.cloud",
+            "user-agent": "curl/7.88.1",
+            "content-length": "331",
+            "accept": "*/*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "129.205.124.220",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "NG",
+            "cf-ray": "9b1ffe62b52c83a2-MXP",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "129.205.124.220, 162.158.129.241",
+            "x-forwarded-host": "olusamdel.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-39-c65d8f959-xj9qw",
+            "x-is-trusted": "yes",
+            "x-real-ip": "129.205.124.220"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "company_name": "Acme Corp",
+            "phone": "+234-801-234-5678",
+            "email": "john.doe@acmecorp.com",
+            "select_product": "Postgres",
+            "select_service": "Cloud adoption/Migration",
+            "message": "We are interested in migrating our database infrastructure to the cloud. Please contact us to discuss our requirements."
+          },
+          "webhookUrl": "https://olusamdel.app.n8n.cloud/webhook-test/openprodkt-leads",
+          "executionMode": "test",
+          "enrichmentApiUrl": "<__PLACEHOLDER_VALUE__Lead enrichment API endpoint URL__>",
+          "postgresTable": "leads",
+          "slackChannel": "#n8n_alert",
+          "emailSequenceRecipient": "ogundele.damilare4@gmail.com",
+          "ga4MeasurementId": "<__PLACEHOLDER_VALUE__GA4 Measurement ID__>",
+          "ga4ApiSecret": "<__PLACEHOLDER_VALUE__GA4 API Secret__>",
+          "leadName/Company": "Acme Corp",
+          "leadEmail": "john.doe@acmecorp.com",
+          "leadPhone": "+234-801-234-5678",
+          "leadSource": "AWS API Gateway",
+          "selectedProduct": "Postgres",
+          "selectedService": "Cloud adoption/Migration",
+          "leadMessage": "We are interested in migrating our database infrastructure to the cloud. Please contact us to discuss our requirements.",
+          "submittedAt": "2025-12-22T14:37:04.238+01:00"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook - Receive Lead": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Validate Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Summarize & Score Lead",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Summarize & Score Lead": {
+      "main": [
+        [
+          {
+            "node": "Store Lead in Postgres",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Lead in Postgres": {
+      "main": [
+        [
+          {
+            "node": "Trigger Email Sequence",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Notify Sales via Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send Event to Google Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Summarize & Score Lead",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Lead Data": {
+      "main": [
+        [
+          {
+            "node": "AI Summarize & Score Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0a34b536-df43-494c-83eb-7061aa3017cf",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "b62b62f5a8db0ba3721aa443ef733e20e82ec84d58dd2c47f49d2dcd07b82bba"
+  },
+  "id": "14kxJmw3kKGoZfVp",
+  "tags": []
+}

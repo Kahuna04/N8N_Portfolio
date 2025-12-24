@@ -1,0 +1,756 @@
+{
+  "name": "Lead Capture & CRM Sync",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "dc8d7e97-e525-4598-925d-74629908f789",
+              "name": "Name",
+              "value": "={{ $json.body.name }}",
+              "type": "string"
+            },
+            {
+              "id": "2e807e43-b8af-4e02-97e0-98b0f26f53d3",
+              "name": "Email",
+              "value": "={{ $json.body.email }}",
+              "type": "string"
+            },
+            {
+              "id": "95f523ef-61fa-4f84-a7f4-233d95207918",
+              "name": "Company",
+              "value": "={{ $json.body.company }}",
+              "type": "string"
+            },
+            {
+              "id": "fec95af6-0615-4ea1-82a4-5464dd26c500",
+              "name": "Service",
+              "value": "={{ $json.body.service }}",
+              "type": "string"
+            },
+            {
+              "id": "7b37f32c-073b-4111-be86-e7843c5c80a4",
+              "name": "Note",
+              "value": "={{ $json.body.message }}",
+              "type": "string"
+            },
+            {
+              "id": "cfcf3951-9ca5-4352-8ae5-a0bc2d7ce195",
+              "name": "Source",
+              "value": "Webform",
+              "type": "string"
+            },
+            {
+              "id": "aace8436-03a7-4ae1-8185-2b0e1314c61b",
+              "name": "Status",
+              "value": "New",
+              "type": "string"
+            },
+            {
+              "id": "352bf8c6-75f5-434d-9bb5-34f4ec030ed2",
+              "name": "Date Created",
+              "value": "={{new Date().toISOString()}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "859e0339-208e-4924-ae03-bf4cffbfbf5a",
+      "name": "Parse Lead Data",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -576,
+        592
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appHrrsT7ROZRMitM",
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblfKfOIYpWsSXzlD",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM/tblfKfOIYpWsSXzlD"
+        },
+        "filterByFormula": "={Email}='{{ $json.Email }}'",
+        "options": {}
+      },
+      "id": "f486e5c2-989b-4089-9508-e250a61b798d",
+      "name": "Check Existing Lead",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        -352,
+        592
+      ],
+      "typeVersion": 2.1,
+      "alwaysOutputData": true,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JmJ2TYyud99El8Cd",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b84c2988-aace-4609-9f09-e84e370879be",
+              "leftValue": "={{ $json.records.length }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "cd40c3f6-e509-4370-9091-0fc9486dc9c5",
+      "name": "IF Lead Exists?",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -128,
+        592
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appHrrsT7ROZRMitM",
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblfKfOIYpWsSXzlD",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM/tblfKfOIYpWsSXzlD"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Webform",
+                  "value": "Webform"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Contacted",
+                  "value": "Contacted"
+                },
+                {
+                  "name": "Converted",
+                  "value": "Converted"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Created",
+              "displayName": "Date Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "2b05781f-5199-4975-88e4-06d2c5d097ab",
+      "name": "Update Lead (Airtable)",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        96,
+        448
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JmJ2TYyud99El8Cd",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appHrrsT7ROZRMitM",
+          "mode": "list",
+          "cachedResultName": "CRM",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblfKfOIYpWsSXzlD",
+          "mode": "list",
+          "cachedResultName": "Payments",
+          "cachedResultUrl": "https://airtable.com/appHrrsT7ROZRMitM/tblfKfOIYpWsSXzlD"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ $('Parse Lead Data').item.json.Name }}",
+            "Email": "={{ $('Parse Lead Data').item.json.Email }}",
+            "Company": "={{ $('Parse Lead Data').item.json.Company }}",
+            "Service": "={{ $('Parse Lead Data').item.json.Service }}",
+            "Note": "={{ $('Parse Lead Data').item.json.Note }}",
+            "Source": "={{ $('Parse Lead Data').item.json.Source }}",
+            "Status": "={{ $('Parse Lead Data').item.json.Status }}",
+            "Date Created": "={{ $('Parse Lead Data').item.json['Date Created'] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Webform",
+                  "value": "Webform"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "New",
+                  "value": "New"
+                },
+                {
+                  "name": "Contacted",
+                  "value": "Contacted"
+                },
+                {
+                  "name": "Converted",
+                  "value": "Converted"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date Created",
+              "displayName": "Date Created",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "id": "90cd8b01-d845-42f7-8be0-d04fe79fa387",
+      "name": "Create Lead (Airtable)",
+      "type": "n8n-nodes-base.airtable",
+      "position": [
+        96,
+        688
+      ],
+      "typeVersion": 2.1,
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "JmJ2TYyud99El8Cd",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json.fields.Email }}",
+        "subject": "=Thanks for reaching out, {{ $json.fields.Name }}!",
+        "emailType": "text",
+        "message": "=Hi {{ $json.fields.Name }},\n\nThanks for contacting us about {{ $json.fields.Service }}.\nOur team will reach out shortly.\n\n— Kahuna Automation\"",
+        "options": {}
+      },
+      "id": "94cbc148-1634-4fd5-94e1-58a8938f7dea",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "position": [
+        320,
+        496
+      ],
+      "typeVersion": 2.1,
+      "webhookId": "e32a6b78-6fef-4fdc-a22a-c47bc32701a2",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "6LAGkB9Kf7Vg4RXw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C09M8NKE5CZ",
+          "mode": "list",
+          "cachedResultName": "n8n-training"
+        },
+        "text": "=🆕 New Lead Received:\n\nName: {{ $('Create Lead (Airtable)').item.json.fields.Name }}\nEmail: {{ $('Create Lead (Airtable)').item.json.fields.Email }}\nService: {{ $('Create Lead (Airtable)').item.json.fields.Service }}\nCompany: {{ $('Create Lead (Airtable)').item.json.fields.Company }}",
+        "otherOptions": {}
+      },
+      "id": "09dbbc41-3ac1-4749-b22c-332625fd6ec4",
+      "name": "Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "position": [
+        544,
+        496
+      ],
+      "typeVersion": 2.3,
+      "webhookId": "6ad7b6fc-dded-4756-8d4a-999f59b618b7",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "jIPtB17fYAkn0OP8",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM",
+          "mode": "list",
+          "cachedResultName": "N8N",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n8fxqjuAUD2t5eOxW-sDglb5BHyjEQa2suc_87vJFDM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email": "={{ $json.fields.Email }}",
+            "Name": "={{ $json.fields.Name }}",
+            "Company": "={{ $json.fields.Company }}",
+            "Service": "={{ $json.fields.Service }}",
+            "Date Created": "={{ $json.fields[\"Date Created\"] }}",
+            "Status": "={{ $json.fields.Status }}",
+            "Note": "={{ $json.fields.Note }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Company",
+              "displayName": "Company",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Service",
+              "displayName": "Service",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Note",
+              "displayName": "Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date Created",
+              "displayName": "Date Created",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "d2e40b81-427b-4123-b771-71626453cd1b",
+      "name": "Log Lead (Google Sheets)",
+      "type": "n8n-nodes-base.googleSheets",
+      "position": [
+        320,
+        736
+      ],
+      "typeVersion": 4.7,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "KTvdX8jttOZ92hJ9",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "wordpress/lead",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -800,
+        592
+      ],
+      "id": "9227eb40-583e-4821-bbf8-70d574b49371",
+      "name": "Webhook",
+      "webhookId": "c133d236-1a02-415e-b1f4-e380c18af9ad"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Parse Lead Data": {
+      "main": [
+        [
+          {
+            "node": "Check Existing Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Existing Lead": {
+      "main": [
+        [
+          {
+            "node": "IF Lead Exists?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF Lead Exists?": {
+      "main": [
+        [
+          {
+            "node": "Update Lead (Airtable)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Lead (Airtable)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Lead (Airtable)": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Lead (Airtable)": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Log Lead (Google Sheets)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Slack Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Parse Lead Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9118f2fe-20e9-40b4-b956-510a5289cdd6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ba696ffb7fdca3fb0713f9a7b2082d31c8d5b41a354c5dd4487f0ca9bf199b3b"
+  },
+  "id": "VIOw6w9JHjZy6WmB",
+  "tags": []
+}
