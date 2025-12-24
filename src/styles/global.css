@@ -1283,29 +1283,69 @@ main {
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* About Section Styles */
+/* About Section */
 .about-section {
-  padding: 6rem 0;
+  background: var(--bg-color);
 }
 
+.about-grid {
+  display: block;
+}
+
+/* Removed grid layout media query */
+
 .about-content {
+  background: var(--surface-color);
+  padding: 40px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
   max-width: 800px;
   margin: 0 auto;
-  background: rgba(255, 255, 255, 0.03);
-  padding: 2.5rem;
-  border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  line-height: 1.8;
+  text-align: center;
 }
 
 .about-text {
-  font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.8);
-  margin-bottom: 1.5rem;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 1rem;
+  line-height: 1.7;
 }
 
-.about-text:last-child {
-  margin-bottom: 0;
+.about-text strong {
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.about-goals {
+  margin-top: 24px;
+}
+
+.goals-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text-main);
+}
+
+.goals-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.goals-list li {
+  position: relative;
+  padding-left: 24px;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.goals-list li::before {
+  content: "•";
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: bold;
 }
 
 /* REDESIGNED CONTACT SECTION */
