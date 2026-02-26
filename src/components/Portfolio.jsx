@@ -1,6 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, X } from 'lucide-react';
+import { X, MessageCircle } from 'lucide-react';
+
+const WHATSAPP_NUMBER = '2348070859502';
+
+const getWhatsAppLink = (workflowTitle) => {
+    const message = `Hi Damilare! I saw your "${workflowTitle}" workflow on your portfolio and I'd love to have something similar built for my business. Can we talk?`;
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`;
+};
 import { portfolioItems } from '../data/portfolio';
 
 const Portfolio = () => {
@@ -87,6 +94,17 @@ const Portfolio = () => {
                                         </span>
                                     ))}
                                 </div>
+
+                                <a
+                                    href={getWhatsAppLink(item.title)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="workflow-cta-btn"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <MessageCircle size={15} />
+                                    <span>Get This Built For You</span>
+                                </a>
                             </div>
                         </motion.div>
                     ))}
