@@ -10,7 +10,7 @@ const getWhatsAppLink = (workflowTitle) => {
 };
 import { portfolioItems } from '../data/portfolio';
 
-const Portfolio = () => {
+const Portfolio = ({ showHeader = true }) => {
     const [activeCategory, setActiveCategory] = useState('All');
     const [selectedImage, setSelectedImage] = useState(null);
 
@@ -21,12 +21,14 @@ const Portfolio = () => {
         : portfolioItems.filter(item => item.category === activeCategory);
 
     return (
-        <section id="portfolio" className="section portfolio-section">
+        <section id="automations" className="section portfolio-section">
             <div className="container">
-                <div className="section-header center">
-                    <h2 className="section-title">Featured Workflows</h2>
-                    <p className="section-subtitle">Automated solutions delivering real business value.</p>
-                </div>
+                {showHeader && (
+                    <div className="section-header center">
+                        <h2 className="section-title">Automation Workflows</h2>
+                        <p className="section-subtitle">N8N and Make.com solutions delivering real business value.</p>
+                    </div>
+                )}
 
                 <div className="category-filter">
                     {categories.map(category => (

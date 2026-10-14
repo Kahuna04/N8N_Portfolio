@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Github, Linkedin, Mail, Twitter, Code2 } from 'lucide-react';
+import { Linkedin, Code2, Mail } from 'lucide-react';
 
 const Hero = () => {
     return (
@@ -18,32 +19,27 @@ const Hero = () => {
                         className="hero-content"
                     >
                         <span className="badge">
-                            Available for Automation Projects
+                            Full-Stack Engineer & Automation Specialist
                         </span>
                         <h1 className="hero-title">
-                            Building Intelligent <br />
+                            Building Products &
+                            <br />
                             <span className="gradient-text">
-                                AI Agents &amp; Automation
+                                Intelligent Automation
                             </span>
                         </h1>
                         <p className="hero-description">
-                            I streamline operations and enhance productivity by building custom workflows with N8N and Make.com.
-                            Expert in connecting APIs, LLMs, and business logic.
+                            I engineer full-stack products and intelligent automation systems. From
+                            REST APIs and React SPAs to N8N workflows, AI agents, and LLM-powered pipelines.
                         </p>
 
                         <div className="hero-actions">
-                            <a
-                                href="#portfolio"
-                                className="cta-button primary"
-                            >
-                                View Workflows
-                            </a>
-                            <a
-                                href="#contact"
-                                className="cta-button secondary"
-                            >
-                                Contact Me
-                            </a>
+                            <Link to="/projects" className="cta-button primary">
+                                View Projects
+                            </Link>
+                            <Link to="/automations" className="cta-button secondary">
+                                See Automations
+                            </Link>
                         </div>
 
                         <div className="hero-socials">

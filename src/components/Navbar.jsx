@@ -1,76 +1,83 @@
-import React, { useState, useEffect } from 'react';
-import { Menu, X, Github, Linkedin, Terminal } from 'lucide-react';
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import { motion } from 'framer-motion';
+
+const navLinks = [
+    { name: 'Home',        path: '/' },
+    { name: 'Projects',    path: '/projects' },
+    { name: 'Automations', path: '/automations' },
+    { name: 'About',       path: '/about' },
+    { name: 'Contact',     path: '/contact' },
+];
 
 const Navbar = () => {
     const [isScrolled, setIsScrolled] = useState(false);
-    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const location = useLocation();
 
     useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        const onScroll = () => setIsScrolled(window.scrollY > 50);
+        window.addEventListener('scroll', onScroll);
+        return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
-    const navLinks = [
-        { name: 'Home', href: '#hero' },
-        { name: 'Expertise', href: '#skills' },
-        { name: 'Tech Stack', href: '#techstack' },
-        { name: 'Portfolio', href: '#portfolio' },
-        { name: 'Contact', href: '#contact' },
-    ];
+    // Close mobile menu on route change
+    useEffect(() => setMenuOpen(false), [location]);
 
     return (
         <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
             <div className="container nav-container">
-                <a href="#hero" className="logo">
+                <NavLink to="/" className="logo">
                     <img src="/logo.png" alt="Damilare Ogundele" className="logo-image" />
-                </a>
+                </NavLink>
 
-                {/* Desktop Menu */}
+                {/* Desktop */}
                 <div className="nav-links desktop-only">
-                    {navLinks.map((link) => (
-                        <a key={link.name} href={link.href} className="nav-link">
-                            {link.name}
-                        </a>
+                    {navLinks.map(({ name, path }) => (
+                        <NavLink
+                            key={path}
+                            to={path}
+                            end={path === '/'}
+                            className={({ isActive }) =>
+                                `nav-link${isActive ? ' nav-link--active' : ''}`
+                            }
+                        >
+                            {name}
+                        </NavLink>
                     ))}
-                    <a
-                        href="https://linkedin.com/in/damilare-ogundele/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="cta-button small"
-                    >
-                        Let's Talk
-                    </a>
                 </div>
 
-                {/* Mobile Toggle */}
-                <div className="mobile-only">
-                    <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="menu-toggle">
-                        {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
-                    </button>
-                </div>
+                {/* Mobile toggle */}
+                <button
+                    className="menu-toggle mobile-only"
+                    onClick={() => setMenuOpen(v => !v)}
+                    aria-label="Toggle menu"
+                >
+                    {menuOpen ? <X size={24} /> : <Menu size={24} />}
+                </button>
             </div>
 
-            {/* Mobile Menu */}
-            {isMobileMenuOpen && (
+            {/* Mobile menu */}
+            {menuOpen && (
                 <motion.div
-                    initial={{ opacity: 0, y: -20 }}
+                    initial={{ opacity: 0, y: -12 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mobile-menu"
                 >
                     <div className="mobile-nav-links">
-                        {navLinks.map((link) => (
-                            <a
-                                key={link.name}
-                                href={link.href}
-                                className="mobile-nav-link"
-                                onClick={() => setIsMobileMenuOpen(false)}
+                        {navLinks.map(({ name, path }) => (
+                            <NavLink
+                                key={path}
+                                to={path}
+                                end={path === '/'}
+                                className={({ isActive }) =>
+                                    `mobile-nav-link${isActive ? ' nav-link--active' : ''}`
+                                }
                             >
-                                {link.name}
-                            </a>
+                                {name}
+                            </NavLink>
                         ))}
                     </div>
                 </motion.div>
